@@ -2,47 +2,57 @@ var express = require("express");
 
 var router = express.Router();
 
-// Import the model (cat.js) to use its database functions.
-var burger = require("../models/burger.js");
+var db = require("../models/");
 
 
-router.get("/", function(req, res) {
-  burger.all(function(data) {
-    var hbsObject = {
-      burgers: data
-    };
-    console.log(hbsObject);
-    res.render("index", hbsObject);
-  });
+router.get("/", function(req, res)
+{
+  db.Burger.findAll({})
+    .then(function(results)
+    {
+      var hbsObject = {burgers: results};
+      console.log("hbsObject: " + hbsObject);
+      res.render("index", hbsObject);
+    });
 });
 
-router.post("/", function(req, res) {
-  burger.create([
-    "burger_name"
-  ], [
-    req.body.name], function() {
+router.post("/", function(req, res)
+{
+  db.Burger.create({
+    name: req.body.name,
+  }).then(function(results)
+  {
+    console.log(results);
     res.redirect("/");
   });
 });
 
-router.put("/:id", function(req, res) {
-  var condition = "id = " + req.params.id;
+router.put("/:id", function(req, res)
+{
+  db.Burger.update({
+    devoured: true,
+    },
+    {
+      where: {
+        id: req.params.id
+      }
+  }).then(function(results)
+  {
+    console.log(results);
+    res.redirect("/");
+  });
+});
 
-  console.log("condition", condition);
-
-  burger.update({devoured: req.body.devoured}, condition, function()
+router.delete("/:id", function(req, res)
+{
+  db.Burger.destroy({
+    where: {
+      id: req.params.id
+    }
+  }).then(function(results)
   {
     res.redirect("/");
   });
 });
 
-router.delete("/:id", function(req, res) {
-  var condition = "id = " + req.params.id;
-
-  burger.delete(condition, function() {
-    res.redirect("/");
-  });
-});
-
-// Export routes for server.js to use.
 module.exports = router;
